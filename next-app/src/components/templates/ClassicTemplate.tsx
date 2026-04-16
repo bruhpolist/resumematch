@@ -1,4 +1,4 @@
-import { Mail, Phone, MapPin, Linkedin, Globe } from "lucide-react";
+﻿import { Mail, Phone, MapPin, LinkIcon, Globe } from "lucide-react";
 import type { IResume } from "../../models";
 
 const ClassicTemplate = ({
@@ -52,7 +52,7 @@ const ClassicTemplate = ({
           )}
           {data.personal_info?.linkedin && (
             <div className="flex items-center gap-1">
-              <Linkedin className="size-4" />
+              <LinkIcon className="size-4" />
               <span className="break-all">{data.personal_info.linkedin}</span>
             </div>
           )}
@@ -192,7 +192,7 @@ const ClassicTemplate = ({
           <div className="flex gap-4 flex-wrap">
             {data.skills.map((skill, index) => (
               <div key={index} className="text-gray-700">
-                • {skill}
+                вЂў {skill}
               </div>
             ))}
           </div>
@@ -203,3 +203,5 @@ const ClassicTemplate = ({
 };
 
 export default ClassicTemplate;
+
+

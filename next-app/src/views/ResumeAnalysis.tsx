@@ -1,5 +1,8 @@
+"use client";
+
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ResumePreview from "../components/ResumePreview";
 import AnalysisReport from "../components/analysis/AnalysisReport";
@@ -13,8 +16,9 @@ type AnalyzeState = "idle" | "loading" | "success" | "error";
 
 export default function ResumeAnalysis() {
   const { t } = useTranslation();
-  const { resumeId } = useParams();
-  const navigate = useNavigate();
+  const params = useParams<{ resumeId?: string }>();
+  const resumeId = params.resumeId;
+  const router = useRouter();
   const { canViewFullAnalysis, hasActiveSubscription, refreshSession } = useAppContext();
   const [jobDescription, setJobDescription] = useState("");
   const [analyzeState, setAnalyzeState] = useState<AnalyzeState>("idle");
@@ -124,7 +128,7 @@ export default function ResumeAnalysis() {
     return (
       <div className="max-w-5xl mx-auto px-4 py-8">
         <p className="text-slate-700">Resume not found.</p>
-        <Link className="text-blue-600 mt-2 inline-block" to="/app">
+        <Link className="text-blue-600 mt-2 inline-block" href="/app">
           Back to Dashboard
         </Link>
       </div>
@@ -135,7 +139,7 @@ export default function ResumeAnalysis() {
     <main className="!pt-0 bg-[url('/images/bg-small.svg')] bg-cover bg-fixed">
       <nav className="flex flex-row justify-between items-center p-4 border-b border-gray-200 bg-white/90 backdrop-blur">
         <button
-          onClick={() => navigate(`/app/builder/${resume._id}`)}
+          onClick={() => router.push(`/app/builder/${resume._id}`)}
           className="flex flex-row items-center gap-2 border border-gray-200 rounded-lg p-2 shadow-sm text-sm font-semibold text-gray-800"
         >
           <img src="/icons/back.svg" alt="back" className="w-2.5 h-2.5" />
@@ -211,7 +215,7 @@ export default function ResumeAnalysis() {
               </p>
               <p className="text-xs mt-1">{t("analysis.previewLabel")}: 20%</p>
               <button
-                onClick={() => navigate("/app/subscription")}
+                onClick={() => router.push("/app/subscription")}
                 className="mt-3 rounded-md border border-indigo-300 bg-white px-3 py-1 text-sm"
               >
                 {t("nav.subscription")}

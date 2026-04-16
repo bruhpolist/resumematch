@@ -1,5 +1,8 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
@@ -9,9 +12,9 @@ type PaymentStatus = "idle" | "loading" | "success" | "pending" | "failed";
 
 export default function PaymentSuccess() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { refreshSession } = useAppContext();
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("idle");
   const [error, setError] = useState("");
 
@@ -103,13 +106,13 @@ export default function PaymentSuccess() {
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <button
-            onClick={() => navigate("/app?create=1")}
+            onClick={() => router.push("/app?create=1")}
             className="rounded-full bg-cyan-600 px-6 py-2.5 text-white font-semibold hover:bg-cyan-700"
           >
             {t("payment.success.goCreate")}
           </button>
           <Link
-            to="/app/subscription"
+            href="/app/subscription"
             className="rounded-full border border-slate-300 px-6 py-2.5 text-slate-700 font-semibold hover:bg-slate-50"
           >
             {t("payment.success.backPlans")}

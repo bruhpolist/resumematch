@@ -1,7 +1,9 @@
+"use client";
+
 import { CheckCircle2, CreditCard, Globe2, Loader2, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../contexts/AppContext";
 import { apiFetch } from "../lib/api";
 
@@ -38,7 +40,7 @@ const providerLabels: Record<Provider, string> = {
 
 export default function Subscription() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { billing, refreshSession } = useAppContext();
 
   const [pricing, setPricing] = useState<PricingResponse | null>(null);
@@ -225,7 +227,7 @@ export default function Subscription() {
       </div>
 
       <div className="mt-6 text-center">
-        <button onClick={() => navigate("/app")} className="text-sm text-slate-500 hover:text-slate-700">
+        <button onClick={() => router.push("/app")} className="text-sm text-slate-500 hover:text-slate-700">
           {t("subscription.backDashboard")}
         </button>
       </div>

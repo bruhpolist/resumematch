@@ -1,7 +1,7 @@
 ﻿import {
   BriefcaseBusiness,
   Globe,
-  Linkedin,
+  LinkIcon,
   Mail,
   MapPin,
   Phone,
@@ -42,7 +42,7 @@ const PersonalInfoForm = ({
     { key: "phone", labelKey: "form.personal.phone", icon: Phone, type: "tel" },
     { key: "location", labelKey: "form.personal.location", icon: MapPin, type: "text" },
     { key: "profession", labelKey: "form.personal.profession", icon: BriefcaseBusiness, type: "text" },
-    { key: "linkedin", labelKey: "form.personal.linkedin", icon: Linkedin, type: "url" },
+    { key: "linkedin", labelKey: "form.personal.linkedin", icon: LinkIcon, type: "url" },
     { key: "website", labelKey: "form.personal.website", icon: Globe, type: "url" },
   ];
 
@@ -118,3 +118,4 @@ const PersonalInfoForm = ({
 };
 
 export default PersonalInfoForm;
+

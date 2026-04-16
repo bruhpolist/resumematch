@@ -1,4 +1,4 @@
-import { Globe, Linkedin, Mail, MapPin, Phone } from "lucide-react";
+﻿import { Globe, LinkIcon, Mail, MapPin, Phone } from "lucide-react";
 import type { ResumeData } from "../../models";
 
 const formatDate = (dateStr: Date | string): string => {
@@ -53,7 +53,7 @@ const ModernTemplate = ({
               href={data.personal_info.linkedin}
               className="flex items-center gap-2"
             >
-              <Linkedin className="size-4" />
+              <LinkIcon className="size-4" />
               <span className="break-all text-xs">
                 {shortUrl(data.personal_info.linkedin)}
               </span>
@@ -188,4 +188,6 @@ const ModernTemplate = ({
 };
 
 export default ModernTemplate;
+
+
 

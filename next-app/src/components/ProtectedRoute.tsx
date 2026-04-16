@@ -1,5 +1,8 @@
-import { Navigate, useLocation } from "react-router-dom";
+"use client";
+
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactElement } from "react";
+import { useEffect } from "react";
 import { useAppContext } from "../contexts/AppContext";
 
 export default function ProtectedRoute({
@@ -8,7 +11,17 @@ export default function ProtectedRoute({
   children: ReactElement;
 }) {
   const { isAuthenticated, isBootstrapping } = useAppContext();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (!isBootstrapping && !isAuthenticated) {
+      const qs = searchParams.toString();
+      const next = encodeURIComponent(qs ? `${pathname}?${qs}` : pathname);
+      router.replace(`/login?next=${next}`);
+    }
+  }, [isAuthenticated, isBootstrapping, pathname, router, searchParams]);
 
   if (isBootstrapping) {
     return (
@@ -19,8 +32,7 @@ export default function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    const next = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/login?next=${next}`} replace />;
+    return null;
   }
 
   return children;

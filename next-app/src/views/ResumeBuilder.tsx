@@ -1,5 +1,8 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type {
   IEducation,
@@ -71,9 +74,9 @@ const createEmptyResume = (id: string, userId = ""): ResumeData => ({
 const ResumeBuilder = () => {
   const { t } = useTranslation();
   const { canAccessPremiumTemplates, user } = useAppContext();
-  const navigate = useNavigate();
-  const { resumeId } = useParams();
-  const resolvedResumeId = resumeId ?? "res123";
+  const router = useRouter();
+  const params = useParams<{ resumeId?: string }>();
+  const resolvedResumeId = params.resumeId ?? "res123";
   const [resumeData, setResumeData] = useState<ResumeData>(
     createEmptyResume(resolvedResumeId, user?.id || "")
   );
@@ -139,7 +142,7 @@ const ResumeBuilder = () => {
 
   const handleShare = () => {
     const frontendUrl = window.location.href.split("/app/")[0];
-    const resumeUrl = frontendUrl + "/view/" + resumeId;
+    const resumeUrl = frontendUrl + "/view/" + resolvedResumeId;
 
     if (navigator.share) {
       navigator.share({ url: resumeUrl, text: "My Resume" });
@@ -190,14 +193,14 @@ const ResumeBuilder = () => {
     }
     setValidationWarnings([]);
     await handleSaveChanges();
-    navigate(`/app/builder/${resolvedResumeId}/analysis`);
+    router.push(`/app/builder/${resolvedResumeId}/analysis`);
   };
 
   return (
     <div>
       <div className="max-w-7xl max-auto px-4 py-6">
         <Link
-          to="/app"
+          href="/app"
           className="inline-flex gap-2 items-center text-slate-500 hover:text-slate-700 transition-all"
         >
           <ArrowLeftIcon className="size-4" /> {t("builder.back")}

@@ -1,10 +1,13 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import type { ResumeData } from "../models";
 import { getResumeById } from "../lib/resumeStorage";
 
 const Preview = () => {
-  const { resumeId } = useParams();
+  const params = useParams<{ resumeId?: string }>();
+  const resumeId = params.resumeId;
 
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   useEffect(() => {
