@@ -1,44 +1,66 @@
 "use client";
 
+import type { ChangeEvent, FormEvent } from "react";
+import { useEffect, useState } from "react";
 import {
+  ArrowRight,
+  Crown,
+  Eye,
   FilePenLineIcon,
+  LayoutTemplate,
   PencilIcon,
   PlusIcon,
+  Sparkles,
   TrashIcon,
   UploadCloud,
   UploadCloudIcon,
+  WalletCards,
   XIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
-import type { IResume } from "../models";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createResume, deleteResume, listResumes } from "../lib/resumeStorage";
 import { useTranslation } from "react-i18next";
+import type { IResume } from "../models";
 import { useAppContext } from "../contexts/AppContext";
+import { createResume, deleteResume, listResumes } from "../lib/resumeStorage";
+
+const accentPairs = [
+  ["#0f766e", "#5eead4"],
+  ["#0f172a", "#38bdf8"],
+  ["#7c2d12", "#fb923c"],
+  ["#312e81", "#818cf8"],
+  ["#14532d", "#4ade80"],
+];
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  const { user } = useAppContext();
-  const colors = ["#0f766e", "#0ea5e9", "#ea580c", "#0891b2", "#16a34a"];
+  const { user, billing, canAccessPremiumTemplates, hasActiveSubscription } = useAppContext();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [allResumes, setAllResumes] = useState<IResume[]>([]);
-  const searchParams = useSearchParams();
-  const shouldOpenCreate = searchParams?.get("create") === "1";
-  const [showCreateResume, setShowCreateResume] = useState(shouldOpenCreate);
+  const [showCreateResume, setShowCreateResume] = useState(searchParams?.get("create") === "1");
   const [showUploadResume, setShowUploadResume] = useState(false);
   const [title, setTitle] = useState("");
   const [resume, setResume] = useState<File>();
-
-  const router = useRouter();
 
   const loadAllResumes = async () => {
     const resumes = await listResumes();
     setAllResumes(resumes);
   };
 
-  const createDraftResume = async (e: FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    void loadAllResumes();
+  }, []);
+
+  const sortedResumes = [...allResumes].sort(
+    (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
+  );
+  const latestResume = sortedResumes[0];
+  const publicResumes = allResumes.filter((item) => item.public).length;
+  const premiumTemplateCount = sortedResumes.filter((item) => item.template !== "classic").length;
+
+  const createDraftResume = async (event: FormEvent) => {
+    event.preventDefault();
 
     const now = new Date().toISOString();
     const created = await createResume({
@@ -77,8 +99,8 @@ const Dashboard = () => {
     router.push(`/app/builder/${created._id}`);
   };
 
-  const uploadResume = async (e: FormEvent) => {
-    e.preventDefault();
+  const uploadResume = async (event: FormEvent) => {
+    event.preventDefault();
 
     const now = new Date().toISOString();
     const created = await createResume({
@@ -118,193 +140,449 @@ const Dashboard = () => {
     router.push(`/app/builder/${created._id}`);
   };
 
-  useEffect(() => {
-    let isMounted = true;
+  const closeCreateModal = () => {
+    setShowCreateResume(false);
+    setTitle("");
+  };
 
-    listResumes().then((resumes) => {
-      if (isMounted) {
-        setAllResumes(resumes);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const closeUploadModal = () => {
+    setShowUploadResume(false);
+    setTitle("");
+    setResume(undefined);
+  };
 
   return (
-    <div>
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <p className="text-2xl font-medium mb-6 bg-gradient-to-r from-slate-700 to-cyan-700 bg-clip-text text-transparent sm:hidden">
-          {t("dashboard.hello", { name: user?.name || "" })}
-        </p>
-        <div className="flex gap-4">
-          <button
-            onClick={() => setShowCreateResume(true)}
-            className="w-full bg-white sm:max-w-40 h-48 flex flex-col items-center justify-center rounded-xl gap-2 text-slate-600 border border-dashed border-slate-300 group hover:border-cyan-500 hover:shadow-lg transition-all duration-300"
-          >
-            <PlusIcon className="size-11 transition-all duration-300 p-2.5 bg-gradient-to-br from-cyan-500 to-sky-600 text-white rounded-full" />
-            <p className="text-sm transition-all duration-300 ">{t("dashboard.create")}</p>
-          </button>
+    <div className="min-h-[calc(100vh-77px)] bg-[linear-gradient(180deg,_#eff6ff_0%,_#f8fafc_28%,_#f8fafc_100%)]">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+        <section className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-white shadow-[0_30px_100px_-40px_rgba(15,23,42,0.45)]">
+          <div className="absolute inset-y-0 right-0 hidden w-1/2 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_60%),radial-gradient(circle_at_bottom_right,_rgba(251,146,60,0.16),_transparent_56%)] lg:block" />
+          <div className="relative grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[1.2fr_0.8fr] lg:px-10 lg:py-10">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5 text-sm font-medium text-sky-700">
+                <Sparkles className="size-4" />
+                {t("dashboard.badge")}
+              </p>
+              <h1 className="mt-5 max-w-2xl text-3xl font-semibold leading-tight text-slate-950 sm:text-4xl">
+                {t("dashboard.heroTitle", { name: user?.name || t("nav.dashboard") })}
+              </h1>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
+                {t("dashboard.heroSubtitle")}
+              </p>
 
-          <button
-            onClick={() => setShowUploadResume(true)}
-            className="w-full bg-white sm:max-w-40 h-48 flex flex-col items-center justify-center rounded-xl gap-2 text-slate-600 border border-dashed border-slate-300 group hover:border-amber-500 hover:shadow-lg transition-all duration-300"
-          >
-            <UploadCloudIcon className="size-11 transition-all duration-300 p-2.5 bg-gradient-to-br from-amber-400 to-orange-500 text-white rounded-full" />
-            <p className="text-sm transition-all duration-300 ">{t("dashboard.upload")}</p>
-          </button>
-        </div>
-
-        <hr className="border-slate-300 my-6 sm:w-[345px]" />
-
-        <div className="grid grid-cols-2 sm:flex flex-wrap gap-4">
-          {allResumes.map((resumeItem, index) => {
-            const baseColor = colors[index % colors.length];
-            return (
-              <div
-                key={resumeItem._id}
-                className="relative w-full sm:max-w-40 h-48 flex flex-col items-center justify-center rounded-xl gap-2 border group hover:shadow-lg transition-all duration-300"
-                style={{
-                  background: `linear-gradient(135deg, ${baseColor}15, ${baseColor}45)`,
-                  borderColor: `${baseColor}40`,
-                }}
-              >
+              <div className="mt-8 flex flex-wrap gap-3">
                 <button
-                  onClick={() => router.push(`/app/builder/${resumeItem._id}`)}
-                  className="absolute inset-0"
-                  aria-label={resumeItem.title}
-                />
-                <FilePenLineIcon
-                  className="size-7 group-hover:scale-105 transition-all"
-                  style={{ color: baseColor }}
-                />
-                <p
-                  className="text-sm group-hover:scale-105 transition-all px-2 text-center"
-                  style={{ color: baseColor }}
+                  onClick={() => setShowCreateResume(true)}
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
-                  {resumeItem.title}
-                </p>
-                <p
-                  className="absolute bottom-1 text-[11px] group-hover:text-slate-500 transition-all duration-300 px-2 text-center"
-                  style={{ color: `${baseColor}90` }}
+                  <PlusIcon className="size-4" />
+                  {t("dashboard.create")}
+                </button>
+                <button
+                  onClick={() => setShowUploadResume(true)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                 >
-                  {t("dashboard.updated")} {new Date(resumeItem.updatedAt).toLocaleDateString()}
-                </p>
-                <div className="absolute top-1 right-1 group-hover:flex items-center hidden z-10">
-                  <button
-                    onClick={async () => {
-                      await deleteResume(resumeItem._id);
-                      await loadAllResumes();
-                    }}
-                    className="size-7 p-1.5 hover:bg-white/40 rounded text-slate-700 transition-colors"
-                    aria-label="Delete"
-                  >
-                    <TrashIcon className="size-4" />
-                  </button>
-                  <button
-                    onClick={() => router.push(`/app/builder/${resumeItem._id}`)}
-                    className="size-7 p-1.5 hover:bg-white/40 rounded text-slate-700 transition-colors"
-                    aria-label="Edit"
-                  >
-                    <PencilIcon className="size-4" />
-                  </button>
+                  <UploadCloudIcon className="size-4" />
+                  {t("dashboard.upload")}
+                </button>
+                <button
+                  onClick={() => router.push("/app/subscription")}
+                  className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-6 py-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100"
+                >
+                  <Crown className="size-4" />
+                  {t("dashboard.upgrade")}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-[28px] border border-slate-200 bg-slate-950 p-6 text-white">
+                <p className="text-sm text-slate-300">{t("dashboard.currentPlan")}</p>
+                <div className="mt-3 flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-2xl font-semibold">{t(`subscription.${billing.plan}`)}</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      {hasActiveSubscription
+                        ? t("dashboard.planActive")
+                        : t("dashboard.planFreeHint")}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-slate-200">
+                    {billing.isUnlimited
+                      ? t("subscription.unlimited")
+                      : `${billing.tokenCount || 0} ${t("nav.credits").toLowerCase()}`}
+                  </span>
                 </div>
               </div>
+
+              <div className="rounded-[28px] border border-slate-200 bg-gradient-to-br from-sky-50 via-white to-orange-50 p-6">
+                <p className="text-sm text-slate-500">{t("dashboard.quickStats")}</p>
+                <div className="mt-4 grid grid-cols-3 gap-3 text-slate-900">
+                  <div>
+                    <p className="text-2xl font-semibold">{allResumes.length}</p>
+                    <p className="mt-1 text-xs text-slate-500">{t("dashboard.statResumes")}</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-semibold">{publicResumes}</p>
+                    <p className="mt-1 text-xs text-slate-500">{t("dashboard.statPublic")}</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-semibold">{premiumTemplateCount}</p>
+                    <p className="mt-1 text-xs text-slate-500">{t("dashboard.statPremium")}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-3">
+          {[
+            {
+              icon: FilePenLineIcon,
+              title: t("dashboard.cardCreateTitle"),
+              description: t("dashboard.cardCreateBody"),
+              action: t("dashboard.create"),
+              onClick: () => setShowCreateResume(true),
+              tone: "from-sky-500 to-cyan-500",
+            },
+            {
+              icon: UploadCloudIcon,
+              title: t("dashboard.cardUploadTitle"),
+              description: t("dashboard.cardUploadBody"),
+              action: t("dashboard.upload"),
+              onClick: () => setShowUploadResume(true),
+              tone: "from-orange-500 to-amber-400",
+            },
+            {
+              icon: LayoutTemplate,
+              title: t("dashboard.cardTemplatesTitle"),
+              description: canAccessPremiumTemplates
+                ? t("dashboard.cardTemplatesBodyUnlocked")
+                : t("dashboard.cardTemplatesBodyLocked"),
+              action: canAccessPremiumTemplates ? t("dashboard.openTemplates") : t("dashboard.upgrade"),
+              onClick: () => router.push(canAccessPremiumTemplates ? "/app?create=1" : "/app/subscription"),
+              tone: "from-violet-500 to-indigo-500",
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.title}
+                onClick={item.onClick}
+                className="group rounded-[28px] border border-slate-200 bg-white p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl"
+              >
+                <span className={`inline-flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br ${item.tone} text-white`}>
+                  <Icon className="size-5" />
+                </span>
+                <p className="mt-5 text-lg font-semibold text-slate-950">{item.title}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  {item.action}
+                  <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+                </span>
+              </button>
             );
           })}
-        </div>
+        </section>
 
-        {showCreateResume && (
-          <form
-            onSubmit={createDraftResume}
-            onClick={() => setShowCreateResume(false)}
-            className="fixed inset-0 bg-black/70 bg-opacity-50 z-10 flex items-center justify-center"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="relative bg-slate-50 border shadow-md rounded-lg w-full max-w-sm p-6"
-            >
-              <h2 className="text-xl font-bold mb-4">{t("dashboard.create")}</h2>
-              <input
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
-                type="text"
-                placeholder={t("dashboard.titlePlaceholder")}
-                className="w-full px-4 py-2 mb-4 border rounded-lg focus:border-cyan-600"
-                required
-              />
-              <button className="w-full bg-cyan-600 text-white rounded py-2 hover:bg-cyan-700 transition-colors">
-                {t("dashboard.create")}
-              </button>
-              <XIcon
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
-                onClick={() => {
-                  setShowCreateResume(false);
-                  setTitle("");
-                }}
-              />
-            </div>
-          </form>
-        )}
+        {latestResume && (
+          <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-950 p-8 text-white">
+              <p className="text-sm text-sky-300">{t("dashboard.continueLabel")}</p>
+              <h2 className="mt-3 text-3xl font-semibold">{latestResume.title}</h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">
+                {latestResume.personal_info.profession ||
+                  latestResume.personal_info.full_name ||
+                  t("dashboard.continueFallback")}
+              </p>
 
-        {showUploadResume && (
-          <form
-            onSubmit={uploadResume}
-            onClick={() => setShowUploadResume(false)}
-            className="fixed inset-0 bg-black/70 bg-opacity-50 z-10 flex items-center justify-center"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="relative bg-slate-50 border shadow-md rounded-lg w-full max-w-sm p-6"
-            >
-              <h2 className="text-xl font-bold mb-4">{t("dashboard.upload")}</h2>
-              <input
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
-                type="text"
-                placeholder={t("dashboard.titlePlaceholder")}
-                className="w-full px-4 py-2 mb-4 border rounded-lg focus:border-cyan-600"
-                required
-              />
-              <div>
-                <label className="block text-sm text-slate-700" htmlFor="resume-input">
-                  {t("dashboard.selectFile")}
-                  <div
-                    className="flex flex-col items-center justify-center gap-2 border group text-slate-400 border-slate-400 border-dashed rounded-md p-4 py-10 my-4 hover:border-cyan-500 hover:text-cyan-700 cursor-pointer transition-colors"
-                  >
-                    {resume ? (
-                      <p className="text-cyan-700">{resume.name}</p>
-                    ) : (
-                      <>
-                        <UploadCloud className="size-14 stroke-1" />
-                        <p>{t("dashboard.upload")}</p>
-                      </>
-                    )}
-                  </div>
-                </label>
-                <input
-                  type="file"
-                  id="resume-input"
-                  accept=".pdf"
-                  hidden
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setResume(e.target.files?.[0])}
-                />
+              <div className="mt-8 flex flex-wrap gap-3 text-sm text-slate-300">
+                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                  {t("dashboard.updated")} {new Date(latestResume.updatedAt).toLocaleDateString()}
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                  {latestResume.public ? t("builder.public") : t("builder.private")}
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+                  {latestResume.template}
+                </span>
               </div>
-              <button className="w-full py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 transition-colors">
-                {t("dashboard.upload")}
-              </button>
-              <XIcon
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
-                onClick={() => {
-                  setShowUploadResume(false);
-                  setTitle("");
-                }}
-              />
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <button
+                  onClick={() => router.push(`/app/builder/${latestResume._id}`)}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950"
+                >
+                  <PencilIcon className="size-4" />
+                  {t("dashboard.continueAction")}
+                </button>
+                <button
+                  onClick={() => router.push(`/view/${latestResume._id}`)}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white"
+                >
+                  <Eye className="size-4" />
+                  {t("dashboard.previewResume")}
+                </button>
+              </div>
             </div>
-          </form>
+
+            <div className="rounded-[32px] border border-slate-200 bg-white p-7">
+              <p className="text-sm text-slate-500">{t("dashboard.accountSnapshot")}</p>
+              <div className="mt-5 space-y-4">
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-slate-500">{t("dashboard.creditsLabel")}</p>
+                      <p className="mt-1 text-2xl font-semibold text-slate-950">
+                        {billing.isUnlimited ? t("subscription.unlimited") : billing.tokenCount || 0}
+                      </p>
+                    </div>
+                    <WalletCards className="size-6 text-slate-400" />
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-sm text-slate-500">{t("dashboard.templatesLabel")}</p>
+                  <p className="mt-1 text-base font-semibold text-slate-950">
+                    {canAccessPremiumTemplates
+                      ? t("dashboard.templatesUnlocked")
+                      : t("dashboard.templatesLocked")}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-sm text-slate-500">{t("dashboard.nextBestActionTitle")}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {allResumes.length > 1
+                      ? t("dashboard.nextBestActionExisting")
+                      : t("dashboard.nextBestActionNew")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
         )}
+
+        <section className="rounded-[32px] border border-slate-200 bg-white p-6 sm:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-sky-700">{t("dashboard.libraryLabel")}</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950">{t("dashboard.libraryTitle")}</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                {t("dashboard.librarySubtitle")}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCreateResume(true)}
+              className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              <PlusIcon className="size-4" />
+              {t("dashboard.newDraft")}
+            </button>
+          </div>
+
+          {sortedResumes.length === 0 ? (
+            <div className="mt-8 rounded-[28px] border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
+              <div className="mx-auto flex size-16 items-center justify-center rounded-3xl bg-white shadow-sm">
+                <FilePenLineIcon className="size-7 text-slate-500" />
+              </div>
+              <h3 className="mt-5 text-xl font-semibold text-slate-950">{t("dashboard.emptyTitle")}</h3>
+              <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-600">
+                {t("dashboard.emptySubtitle")}
+              </p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={() => setShowCreateResume(true)}
+                  className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white"
+                >
+                  {t("dashboard.create")}
+                </button>
+                <button
+                  onClick={() => setShowUploadResume(true)}
+                  className="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700"
+                >
+                  {t("dashboard.upload")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {sortedResumes.map((resumeItem, index) => {
+                const [baseColor, glowColor] = accentPairs[index % accentPairs.length];
+                return (
+                  <div
+                    key={resumeItem._id}
+                    className="group relative overflow-hidden rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl"
+                  >
+                    <div
+                      className="absolute inset-x-0 top-0 h-28 opacity-90"
+                      style={{
+                        background: `linear-gradient(135deg, ${baseColor} 0%, ${glowColor} 100%)`,
+                      }}
+                    />
+                    <div className="relative">
+                      <div className="flex items-start justify-between gap-4">
+                        <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-white/90 shadow-sm">
+                          <FilePenLineIcon className="size-5" style={{ color: baseColor }} />
+                        </span>
+                        <div className="flex items-center gap-2 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+                          <button
+                            onClick={() => router.push(`/app/builder/${resumeItem._id}`)}
+                            className="inline-flex size-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white"
+                            aria-label="Edit"
+                          >
+                            <PencilIcon className="size-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              await deleteResume(resumeItem._id);
+                              await loadAllResumes();
+                            }}
+                            className="inline-flex size-9 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm transition hover:bg-white"
+                            aria-label="Delete"
+                          >
+                            <TrashIcon className="size-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-16">
+                        <p className="text-lg font-semibold text-slate-950">{resumeItem.title}</p>
+                        <p className="mt-2 min-h-12 text-sm leading-6 text-slate-600">
+                          {resumeItem.personal_info.profession ||
+                            resumeItem.personal_info.full_name ||
+                            t("dashboard.resumeFallback")}
+                        </p>
+                      </div>
+
+                      <div className="mt-5 flex flex-wrap gap-2 text-xs">
+                        <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">
+                          {resumeItem.template}
+                        </span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700">
+                          {resumeItem.public ? t("builder.public") : t("builder.private")}
+                        </span>
+                      </div>
+
+                      <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                        <p className="text-xs text-slate-500">
+                          {t("dashboard.updated")} {new Date(resumeItem.updatedAt).toLocaleDateString()}
+                        </p>
+                        <button
+                          onClick={() => router.push(`/app/builder/${resumeItem._id}`)}
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-950"
+                        >
+                          {t("dashboard.openResume")}
+                          <ArrowRight className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       </div>
+
+      {showCreateResume && (
+        <form
+          onSubmit={createDraftResume}
+          onClick={closeCreateModal}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm"
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="relative w-full max-w-lg rounded-[32px] border border-slate-200 bg-white p-8 shadow-2xl"
+          >
+            <button
+              type="button"
+              onClick={closeCreateModal}
+              className="absolute right-5 top-5 inline-flex size-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+            >
+              <XIcon className="size-4" />
+            </button>
+            <div className="inline-flex size-14 items-center justify-center rounded-3xl bg-sky-100 text-sky-700">
+              <PlusIcon className="size-6" />
+            </div>
+            <h2 className="mt-6 text-2xl font-semibold text-slate-950">{t("dashboard.modalCreateTitle")}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{t("dashboard.modalCreateSubtitle")}</p>
+            <input
+              onChange={(event) => setTitle(event.target.value)}
+              value={title}
+              type="text"
+              placeholder={t("dashboard.titlePlaceholder")}
+              className="mt-6 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+              required
+            />
+            <button className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+              {t("dashboard.create")}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {showUploadResume && (
+        <form
+          onSubmit={uploadResume}
+          onClick={closeUploadModal}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm"
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            className="relative w-full max-w-lg rounded-[32px] border border-slate-200 bg-white p-8 shadow-2xl"
+          >
+            <button
+              type="button"
+              onClick={closeUploadModal}
+              className="absolute right-5 top-5 inline-flex size-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+            >
+              <XIcon className="size-4" />
+            </button>
+            <div className="inline-flex size-14 items-center justify-center rounded-3xl bg-amber-100 text-amber-700">
+              <UploadCloud className="size-6" />
+            </div>
+            <h2 className="mt-6 text-2xl font-semibold text-slate-950">{t("dashboard.modalUploadTitle")}</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{t("dashboard.modalUploadSubtitle")}</p>
+
+            <input
+              onChange={(event) => setTitle(event.target.value)}
+              value={title}
+              type="text"
+              placeholder={t("dashboard.titlePlaceholder")}
+              className="mt-6 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900 outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
+              required
+            />
+
+            <label
+              htmlFor="resume-input"
+              className="mt-4 block cursor-pointer rounded-[28px] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-amber-400 hover:bg-amber-50/60"
+            >
+              {resume ? (
+                <div>
+                  <p className="text-sm font-medium text-slate-900">{resume.name}</p>
+                  <p className="mt-1 text-xs text-slate-500">{t("dashboard.fileSelected")}</p>
+                </div>
+              ) : (
+                <div>
+                  <UploadCloud className="mx-auto size-12 text-slate-400" />
+                  <p className="mt-4 text-sm font-medium text-slate-900">{t("dashboard.selectFile")}</p>
+                  <p className="mt-1 text-xs text-slate-500">{t("dashboard.dropzoneHint")}</p>
+                </div>
+              )}
+            </label>
+            <input
+              type="file"
+              id="resume-input"
+              accept=".pdf"
+              hidden
+              onChange={(event: ChangeEvent<HTMLInputElement>) => setResume(event.target.files?.[0])}
+            />
+
+            <button className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+              {t("dashboard.upload")}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 };
