@@ -1,0 +1,24 @@
+FROM node:22-alpine
+
+WORKDIR /app
+
+# Install dependencies for root scripts and Next.js app
+COPY package*.json ./
+COPY next-app/package*.json ./next-app/
+RUN npm ci && npm --prefix next-app ci
+
+# Copy application sources
+COPY server ./server
+COPY next-app ./next-app
+
+# Build Next.js app
+RUN npm run next:build
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+EXPOSE 3000
+
+# Run DB migrations before app startup
+CMD ["sh", "-c", "npm run migrate && npm run next:start"]

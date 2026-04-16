@@ -1,0 +1,49 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+
+      DATABASE_URL: postgresql://resume_user:resume_password@postgres:5432/resume_builder
+      DATABASE_SSL: "false"
+      DATABASE_SSL_STRICT: "false"
+
+      OPENROUTER_BASE_URL: https://openrouter.ai/api/v1
+      OPENROUTER_MODEL: qwen/qwen3.6-plus-preview:free
+      OPENROUTER_APP_NAME: AI Resume Builder
+      OPENROUTER_SITE_URL: https://www.resumematch.ru
+
+      APP_BASE_URL: https://www.resumematch.ru
+      CLIENT_BASE_URL: https://www.resumematch.ru
+
+      # Set these in Railway Variables after import:
+      # SESSION_SECRET
+      # OPENROUTER_API_KEY
+      # YOOKASSA_SHOP_ID / YOOKASSA_SECRET_KEY / YOOKASSA_WEBHOOK_SECRET
+      # CARDLINK_SHOP_ID / CARDLINK_API_TOKEN / CARDLINK_API_URL
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: resume_builder
+      POSTGRES_USER: resume_user
+      POSTGRES_PASSWORD: resume_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U resume_user -d resume_builder"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - resume_builder_pg_data:/var/lib/postgresql/data
+
+volumes:
+  resume_builder_pg_data:
