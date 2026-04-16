@@ -10,6 +10,7 @@ import {
 import { loginSchema } from "@/server/schemas.mjs";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   const body = await request.json().catch(() => null);
@@ -45,3 +46,5 @@ export async function POST(request) {
   await attachSessionCookie(response, user.id);
   return response;
 }
+
+

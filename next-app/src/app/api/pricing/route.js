@@ -2,6 +2,7 @@
 import { getCountryFromRequest, listPricingPlans } from "@/server/billing.mjs";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   const country = getCountryFromRequest(
@@ -17,3 +18,5 @@ export async function GET(request) {
   const payload = await listPricingPlans({ country });
   return NextResponse.json(payload);
 }
+
+

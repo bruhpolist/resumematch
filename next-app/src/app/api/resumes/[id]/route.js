@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { pool } from "@/server/db.mjs";
 import { mapResumeRowToDto, readUserFromRequest, unauthorized } from "@/server/core.mjs";
 import { resumeSchema } from "@/server/schemas.mjs";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request, { params }) {
   const { id } = await params;
@@ -79,3 +80,5 @@ export async function DELETE(request, { params }) {
 
   return new NextResponse(null, { status: 204 });
 }
+
+

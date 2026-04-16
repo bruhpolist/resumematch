@@ -4,6 +4,7 @@ import { mapResumeRowToDto, readUserFromRequest, unauthorized } from "@/server/c
 import { resumeSchema } from "@/server/schemas.mjs";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   const user = await readUserFromRequest(request);
@@ -47,3 +48,5 @@ export async function POST(request) {
 
   return NextResponse.json({ resume: mapResumeRowToDto(created.rows[0]) }, { status: 201 });
 }
+
+

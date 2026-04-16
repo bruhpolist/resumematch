@@ -15,19 +15,32 @@ export const getRequiredEnv = (name) => {
   return value;
 };
 
-const defaultDatabaseUrl = getRequiredEnv("DATABASE_URL");
+let poolInstance = null;
 
-export const pool = new Pool({
-  connectionString: defaultDatabaseUrl,
-  ssl:
-    process.env.DATABASE_SSL === "true"
-      ? { rejectUnauthorized: process.env.DATABASE_SSL_STRICT === "true" }
-      : undefined,
-});
+const getPool = () => {
+  if (poolInstance) return poolInstance;
 
-pool.on("error", (error) => {
-  console.error("Unexpected PostgreSQL pool error", error);
-});
+  const databaseUrl = getRequiredEnv("DATABASE_URL");
+  poolInstance = new Pool({
+    connectionString: databaseUrl,
+    ssl:
+      process.env.DATABASE_SSL === "true"
+        ? { rejectUnauthorized: process.env.DATABASE_SSL_STRICT === "true" }
+        : undefined,
+  });
+
+  poolInstance.on("error", (error) => {
+    console.error("Unexpected PostgreSQL pool error", error);
+  });
+
+  return poolInstance;
+};
+
+export const pool = {
+  query: (...args) => getPool().query(...args),
+  connect: (...args) => getPool().connect(...args),
+  end: (...args) => getPool().end(...args),
+};
 
 export const migrationsDir = path.resolve(__dirname, "migrations");
 

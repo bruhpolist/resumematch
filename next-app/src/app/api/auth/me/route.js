@@ -2,6 +2,7 @@
 import { readActiveSubscription, readUserFromRequest, sanitizeUser } from "@/server/core.mjs";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   const user = await readUserFromRequest(request);
@@ -12,3 +13,5 @@ export async function GET(request) {
   const billing = await readActiveSubscription(user.id);
   return NextResponse.json({ authenticated: true, user: sanitizeUser(user), billing });
 }
+
+

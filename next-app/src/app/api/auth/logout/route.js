@@ -2,9 +2,12 @@
 import { clearSession } from "@/server/core.mjs";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   const response = NextResponse.json({ ok: true });
   await clearSession(request, response);
   return response;
 }
+
+
