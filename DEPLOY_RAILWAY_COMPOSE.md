@@ -23,3 +23,16 @@ This repo includes `docker-compose.railway.yml` for staged import of services to
 
 - Compose import creates Railway services from this file, but secret values should still be set in Railway Variables.
 - `railway.json` remains available for non-Docker single-service deploy flow.
+
+## One-command bootstrap (CLI)
+
+If you already deployed only `web` and want to auto-create Postgres + wire variables:
+
+```powershell
+pwsh ./scripts/railway-bootstrap.ps1 -WebService web -Environment production
+```
+
+The script:
+- adds PostgreSQL service
+- sets `DATABASE_URL` on `web` as a Railway reference to Postgres
+- sets DB runtime flags (`DATABASE_SSL`, `DATABASE_SSL_STRICT`)
