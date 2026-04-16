@@ -1,0 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap");
+@import "tailwindcss";
+* {
+  font-family: "Outfit", sans-serif;
+}
+
+@layer base {
+  button {
+    @apply cursor-pointer;
+  }
+  input:not([type="checkbox"]) {
+    @apply outline-none focus:ring border border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg;
+  }
+  textarea {
+    @apply outline-none focus:ring border border-gray-300 focus:ring-blue-500 focus:border-blue-500 rounded-lg resize-none;
+  }
+}
+
+@layer components {
+  .gradient-border {
+    background: linear-gradient(to bottom, rgba(193, 211, 248, 0.1), rgba(167, 191, 241, 0.3));
+    @apply p-4 rounded-2xl;
+  }
+
+  .primary-button {
+    background: linear-gradient(to bottom, #8e98ff, #606beb);
+    @apply text-white rounded-full px-4 py-2 cursor-pointer;
+  }
+
+  .resume-page {
+    width: 100%;
+    min-height: 1056px;
+    overflow: hidden;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .resume-page * {
+    overflow-wrap: break-word;
+    word-break: normal;
+    hyphens: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .resume-copy {
+    @apply text-[13px] leading-6;
+  }
+
+  .resume-meta {
+    @apply text-[12px] leading-5;
+  }
+
+  .resume-heading-line {
+    @apply flex items-center gap-4;
+  }
+}
