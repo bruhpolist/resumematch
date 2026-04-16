@@ -15,7 +15,7 @@ export const getRequiredEnv = (name) => {
   return value;
 };
 
-const defaultDatabaseUrl = process.env.DATABASE_URL;
+const defaultDatabaseUrl = getRequiredEnv("DATABASE_URL");
 
 export const pool = new Pool({
   connectionString: defaultDatabaseUrl,
