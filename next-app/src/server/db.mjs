@@ -15,12 +15,30 @@ export const getRequiredEnv = (name) => {
   return value;
 };
 
+const getDatabaseUrl = () => {
+  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
+
+  const host = process.env.PGHOST;
+  const port = process.env.PGPORT;
+  const user = process.env.PGUSER;
+  const password = process.env.PGPASSWORD;
+  const database = process.env.PGDATABASE;
+
+  if (host && port && user && password && database) {
+    return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${database}`;
+  }
+
+  throw new Error(
+    "Missing DB connection settings. Set DATABASE_URL or PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE."
+  );
+};
+
 let poolInstance = null;
 
 const getPool = () => {
   if (poolInstance) return poolInstance;
 
-  const databaseUrl = getRequiredEnv("DATABASE_URL");
+  const databaseUrl = getDatabaseUrl();
   poolInstance = new Pool({
     connectionString: databaseUrl,
     ssl:
