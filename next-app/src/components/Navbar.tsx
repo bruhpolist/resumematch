@@ -34,6 +34,12 @@ export default function Navbar() {
               <Link href="/app" className="px-3 py-1.5 rounded-full hover:bg-slate-100">
                 {t("nav.dashboard")}
               </Link>
+              <Link href="/app/templates" className="px-3 py-1.5 rounded-full hover:bg-slate-100">
+                {t("nav.templates")}
+              </Link>
+              <Link href="/app/process" className="px-3 py-1.5 rounded-full hover:bg-slate-100">
+                {t("nav.process")}
+              </Link>
               <Link
                 href="/app/subscription"
                 className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200"

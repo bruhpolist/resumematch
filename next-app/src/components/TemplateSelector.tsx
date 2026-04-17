@@ -4,24 +4,7 @@ import { Check, Crown, Layout } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/contexts/AppContext";
-
-const templates = [
-  { id: "classic", name: "Classic", preview: "A clean, traditional resume format.", premium: false },
-  { id: "modern", name: "Modern", preview: "Sleek design with strategic use of color.", premium: false },
-  { id: "minimal-image", name: "Minimal Image", preview: "Minimal design with profile image.", premium: false },
-  { id: "minimal", name: "Minimal", preview: "Ultra-clean design that focuses on content.", premium: false },
-  { id: "executive", name: "Executive", preview: "Poster layout with left information rail, circular photo, pill headers, and bold skill bars.", premium: true },
-  { id: "corporate", name: "Corporate", preview: "Magazine-inspired layout with giant circles, centered portrait, and airy editorial sections.", premium: true },
-  { id: "elegant", name: "Elegant", preview: "Minimal gray editorial board with strong header band, timeline, and achievement blocks.", premium: true },
-  { id: "sidebar-pro", name: "Sidebar Pro", preview: "Dark poster card with glowing circular frame, stacked panels, and neon-style skill chart.", premium: true },
-  { id: "compact-pro", name: "Compact Pro", preview: "Soft infographic resume with central axis, rounded gradient labels, and node-based sections.", premium: true },
-  { id: "golden-arc", name: "Golden Arc", preview: "Golden left rail with rounded portrait crop, pill headers, and editorial experience blocks.", premium: true },
-  { id: "aqua-orbit", name: "Aqua Orbit", preview: "Aqua poster with floating circles, deep side panel, portrait card, and structured two-column body.", premium: true },
-  { id: "soft-taupe", name: "Soft Taupe", preview: "Taupe minimal resume board with circular CV badge, mono lines, soft dividers, and calm hierarchy.", premium: true },
-  { id: "teal-stripe", name: "Teal Stripe", preview: "Dark teal sidebar with angled top motif, compact data modules, and crisp right-column sections.", premium: true },
-  { id: "navy-beam", name: "Navy Beam", preview: "Navy hero header with diagonal beams, giant circular portrait, contact rail, and timeline body.", premium: true },
-  { id: "futuristic-neon", name: "Futuristic Neon", preview: "Cyberpunk-inspired neon HUD layout with glowing panels, sci-fi overlays, matrix cards, and rich futuristic elements.", premium: true },
-];
+import { templateCatalog } from "@/lib/templateCatalog";
 
 export default function TemplateSelector({
   selectedTemplate,
@@ -44,7 +27,7 @@ export default function TemplateSelector({
       </button>
       {isOpen && (
         <div className="absolute top-full w-xs p-3 mt-2 space-y-3 z-20 bg-white rounded-md border border-gray-200 shadow-sm max-h-[70vh] overflow-auto">
-          {templates.map((template) => {
+          {templateCatalog.map((template) => {
             const locked = template.premium && !canAccessPremiumTemplates;
             return (
               <div

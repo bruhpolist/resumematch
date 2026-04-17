@@ -185,11 +185,18 @@ const Dashboard = () => {
                   {t("dashboard.upload")}
                 </button>
                 <button
-                  onClick={() => router.push("/app/subscription")}
+                  onClick={() => router.push("/app/templates")}
                   className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-6 py-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100"
                 >
                   <Crown className="size-4" />
-                  {t("dashboard.upgrade")}
+                  {t("dashboard.exploreTemplates")}
+                </button>
+                <button
+                  onClick={() => router.push("/app/process")}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                >
+                  <Sparkles className="size-4" />
+                  {t("dashboard.watchProcess")}
                 </button>
               </div>
             </div>
@@ -259,8 +266,8 @@ const Dashboard = () => {
               description: canAccessPremiumTemplates
                 ? t("dashboard.cardTemplatesBodyUnlocked")
                 : t("dashboard.cardTemplatesBodyLocked"),
-              action: canAccessPremiumTemplates ? t("dashboard.openTemplates") : t("dashboard.upgrade"),
-              onClick: () => router.push(canAccessPremiumTemplates ? "/app?create=1" : "/app/subscription"),
+              action: t("dashboard.openTemplates"),
+              onClick: () => router.push("/app/templates"),
               tone: "from-violet-500 to-indigo-500",
             },
           ].map((item) => {
