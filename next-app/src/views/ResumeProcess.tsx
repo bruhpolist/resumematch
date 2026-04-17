@@ -24,9 +24,9 @@ function ProcessPreview({
 }) {
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_22px_55px_-34px_rgba(15,23,42,0.36)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_35px_80px_-42px_rgba(15,23,42,0.42)] sm:p-4">
-      <div className="relative h-[320px] overflow-hidden rounded-[22px] border border-slate-200 bg-[linear-gradient(180deg,_#e2e8f0_0%,_#f8fafc_55%,_#ffffff_100%)] sm:h-[380px] lg:h-[430px]">
+      <div className="relative h-[380px] overflow-hidden rounded-[22px] border border-slate-200 bg-[linear-gradient(180deg,_#e2e8f0_0%,_#f8fafc_55%,_#ffffff_100%)] sm:h-[460px] lg:h-[560px]">
         <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(90deg,_rgba(15,23,42,0.06),_rgba(14,165,233,0.14),_rgba(249,115,22,0.08))]" />
-        <div className="animate-soft-float absolute left-1/2 top-4 w-[896px] -translate-x-1/2 origin-top scale-[0.24] sm:top-5 sm:scale-[0.29] lg:scale-[0.34]">
+        <div className="animate-soft-float absolute left-1/2 top-4 w-[896px] -translate-x-1/2 origin-top scale-[0.29] sm:top-5 sm:scale-[0.36] lg:scale-[0.46]">
           <ResumePreview
             data={resume}
             template={template}
