@@ -54,4 +54,61 @@
   .resume-heading-line {
     @apply flex items-center gap-4;
   }
+
+  .animate-fade-in {
+    animation: fade-in 240ms ease-out both;
+  }
+
+  .animate-modal-in {
+    animation: modal-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-rise-in {
+    animation: rise-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-soft-float {
+    animation: soft-float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes soft-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }

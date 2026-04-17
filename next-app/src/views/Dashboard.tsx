@@ -507,11 +507,11 @@ const Dashboard = () => {
         <form
           onSubmit={createDraftResume}
           onClick={closeCreateModal}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm"
+          className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm"
         >
           <div
             onClick={(event) => event.stopPropagation()}
-            className="relative w-full max-w-lg rounded-[32px] border border-slate-200 bg-white p-8 shadow-2xl"
+            className="animate-modal-in relative w-full max-w-lg rounded-[32px] border border-slate-200 bg-white p-8 shadow-2xl"
           >
             <button
               type="button"
@@ -551,11 +551,11 @@ const Dashboard = () => {
         <form
           onSubmit={uploadResume}
           onClick={closeUploadModal}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm"
+          className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm"
         >
           <div
             onClick={(event) => event.stopPropagation()}
-            className="relative w-full max-w-lg rounded-[32px] border border-slate-200 bg-white p-8 shadow-2xl"
+            className="animate-modal-in relative w-full max-w-lg rounded-[32px] border border-slate-200 bg-white p-8 shadow-2xl"
           >
             <button
               type="button"

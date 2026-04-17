@@ -1,14 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { useAppContext } from "@/contexts/AppContext";
 
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout, billing, isAuthenticated } = useAppContext();
+
+  const navLinkClass = (active: boolean) =>
+    `px-3 py-1.5 rounded-full transition-all ${
+      active
+        ? "bg-slate-900 text-white shadow-[0_10px_25px_-18px_rgba(15,23,42,0.7)]"
+        : "text-slate-700 hover:bg-slate-100"
+    }`;
 
   const switchLanguage = (lang: "en" | "ru") => {
     i18n.changeLanguage(lang);
@@ -22,28 +30,25 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-3 text-sm">
-          <Link href="/" className="px-3 py-1.5 rounded-full hover:bg-slate-100">
+          <Link href="/" className={navLinkClass(pathname === "/")}>
             {t("nav.home")}
           </Link>
-          <a href="/#pricing" className="px-3 py-1.5 rounded-full hover:bg-slate-100">
+          <a href="/#pricing" className={navLinkClass(pathname === "/" && !isAuthenticated)}>
             {t("nav.pricing")}
           </a>
 
           {isAuthenticated && (
             <>
-              <Link href="/app" className="px-3 py-1.5 rounded-full hover:bg-slate-100">
+              <Link href="/app" className={navLinkClass(pathname === "/app")}>
                 {t("nav.dashboard")}
               </Link>
-              <Link href="/app/templates" className="px-3 py-1.5 rounded-full hover:bg-slate-100">
+              <Link href="/app/templates" className={navLinkClass(pathname === "/app/templates")}>
                 {t("nav.templates")}
               </Link>
-              <Link href="/app/process" className="px-3 py-1.5 rounded-full hover:bg-slate-100">
+              <Link href="/app/process" className={navLinkClass(pathname === "/app/process")}>
                 {t("nav.process")}
               </Link>
-              <Link
-                href="/app/subscription"
-                className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200"
-              >
+              <Link href="/app/subscription" className={navLinkClass(pathname === "/app/subscription")}>
                 {t("nav.subscription")}
               </Link>
             </>

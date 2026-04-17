@@ -20,10 +20,10 @@ function ProcessPreview({
   resume: (typeof resumeProcessSteps)[number]["resume"];
 }) {
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_50px_-35px_rgba(15,23,42,0.45)] sm:p-4">
+    <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_20px_50px_-35px_rgba(15,23,42,0.45)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_35px_80px_-45px_rgba(15,23,42,0.4)] sm:p-4">
       <div className="relative h-[320px] overflow-hidden rounded-[22px] border border-slate-200 bg-[linear-gradient(180deg,_#e2e8f0_0%,_#f8fafc_55%,_#ffffff_100%)] sm:h-[380px] lg:h-[430px]">
         <div className="absolute inset-x-0 top-0 h-14 bg-[linear-gradient(90deg,_rgba(15,23,42,0.06),_rgba(14,165,233,0.12),_rgba(249,115,22,0.08))]" />
-        <div className="absolute left-1/2 top-4 w-[896px] -translate-x-1/2 origin-top scale-[0.24] sm:top-5 sm:scale-[0.29] lg:scale-[0.34]">
+        <div className="animate-soft-float absolute left-1/2 top-4 w-[896px] -translate-x-1/2 origin-top scale-[0.24] sm:top-5 sm:scale-[0.29] lg:scale-[0.34]">
           <ResumePreview
             data={resume}
             template={template}
@@ -102,7 +102,8 @@ export default function ResumeProcess() {
           {resumeProcessSteps.map((item, index) => (
             <article
               key={item.id}
-              className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_24px_70px_-45px_rgba(15,23,42,0.3)]"
+              className="animate-rise-in overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_24px_70px_-45px_rgba(15,23,42,0.3)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_35px_85px_-50px_rgba(15,23,42,0.35)]"
+              style={{ animationDelay: `${index * 90}ms` }}
             >
               <div className="grid gap-0 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
                 <div className="border-b border-slate-100 bg-[linear-gradient(180deg,_#ffffff_0%,_#f8fafc_100%)] p-6 sm:p-8 xl:border-b-0 xl:border-r">
@@ -126,7 +127,7 @@ export default function ResumeProcess() {
                     {item.points.map((point) => (
                       <div
                         key={point}
-                        className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-700"
+                        className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-700 transition-all duration-300 hover:border-sky-200 hover:bg-sky-50/40"
                       >
                         <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-500" />
                         <span>{point}</span>
