@@ -69,7 +69,7 @@ export default function ResumeProcess() {
                   {t("process.backToTemplates")}
                 </Link>
                 <Link
-                  href={canAccessPremiumTemplates ? "/app?create=1" : "/app/subscription"}
+                  href={canAccessPremiumTemplates ? "/app?create=1&template=executive" : "/app/subscription"}
                   className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
                   <Crown className="size-4" />
@@ -156,7 +156,7 @@ export default function ResumeProcess() {
               <p className="mt-3 text-sm leading-7 text-slate-300">{t("process.ctaSubtitle")}</p>
             </div>
             <Link
-              href={canAccessPremiumTemplates ? "/app?create=1" : "/app/subscription"}
+              href={canAccessPremiumTemplates ? "/app?create=1&template=executive" : "/app/subscription"}
               className="inline-flex items-center gap-2 self-start rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
             >
               {canAccessPremiumTemplates ? t("process.ctaAction") : t("process.unlockPremium")}

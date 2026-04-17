@@ -135,7 +135,7 @@ export default function TemplatesGallery() {
                   </div>
 
                   <Link
-                    href={locked ? "/app/subscription" : "/app?create=1"}
+                    href={locked ? "/app/subscription" : `/app?create=1&template=${encodeURIComponent(template.id)}`}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                       locked
                         ? "bg-amber-50 text-amber-900 hover:bg-amber-100"

@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import type { IResume } from "../models";
 import { useAppContext } from "../contexts/AppContext";
 import { createResume, deleteResume, listResumes } from "../lib/resumeStorage";
+import { templateCatalog } from "../lib/templateCatalog";
 
 const accentPairs = [
   ["#0f766e", "#5eead4"],
@@ -36,12 +37,16 @@ const Dashboard = () => {
   const { user, billing, canAccessPremiumTemplates, hasActiveSubscription } = useAppContext();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const requestedTemplateId = searchParams?.get("template") ?? "classic";
+  const requestedTemplate =
+    templateCatalog.find((item) => item.id === requestedTemplateId) ?? templateCatalog[0];
 
   const [allResumes, setAllResumes] = useState<IResume[]>([]);
   const [showCreateResume, setShowCreateResume] = useState(searchParams?.get("create") === "1");
   const [showUploadResume, setShowUploadResume] = useState(false);
   const [title, setTitle] = useState("");
   const [resume, setResume] = useState<File>();
+  const [selectedTemplateId, setSelectedTemplateId] = useState(requestedTemplate.id);
 
   const loadAllResumes = async () => {
     const resumes = await listResumes();
@@ -51,6 +56,11 @@ const Dashboard = () => {
   useEffect(() => {
     void loadAllResumes();
   }, []);
+
+  useEffect(() => {
+    setShowCreateResume(searchParams?.get("create") === "1");
+    setSelectedTemplateId(requestedTemplate.id);
+  }, [requestedTemplate.id, searchParams]);
 
   const sortedResumes = [...allResumes].sort(
     (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime()
@@ -63,6 +73,8 @@ const Dashboard = () => {
     event.preventDefault();
 
     const now = new Date().toISOString();
+    const selectedTemplate =
+      templateCatalog.find((item) => item.id === selectedTemplateId) ?? templateCatalog[0];
     const created = await createResume({
       _id: crypto.randomUUID(),
       title,
@@ -82,8 +94,8 @@ const Dashboard = () => {
       education: [],
       skills: [],
       project: [],
-      template: "classic",
-      accent_color: "#0ea5e9",
+      template: selectedTemplate.id,
+      accent_color: selectedTemplate.accentColor,
       public: false,
       createdAt: now,
       updatedAt: now,
@@ -143,6 +155,7 @@ const Dashboard = () => {
   const closeCreateModal = () => {
     setShowCreateResume(false);
     setTitle("");
+    setSelectedTemplateId("classic");
   };
 
   const closeUploadModal = () => {
@@ -512,6 +525,13 @@ const Dashboard = () => {
             </div>
             <h2 className="mt-6 text-2xl font-semibold text-slate-950">{t("dashboard.modalCreateTitle")}</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">{t("dashboard.modalCreateSubtitle")}</p>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">
+              <LayoutTemplate className="size-4 text-slate-500" />
+              <span className="text-slate-500">Template:</span>
+              <span className="font-semibold text-slate-900">
+                {templateCatalog.find((item) => item.id === selectedTemplateId)?.name ?? "Classic"}
+              </span>
+            </div>
             <input
               onChange={(event) => setTitle(event.target.value)}
               value={title}
