@@ -51,6 +51,53 @@ const normalizePhrasings = (list) =>
         .filter((item) => item.original && item.improved)
     : [];
 
+const normalizeImportedResume = (resume) => ({
+  title:
+    typeof resume?.title === "string" && resume.title.trim()
+      ? resume.title.trim()
+      : "Imported Resume",
+  personal_info: {
+    full_name: typeof resume?.personal_info?.full_name === "string" ? resume.personal_info.full_name.trim() : "",
+    email: typeof resume?.personal_info?.email === "string" ? resume.personal_info.email.trim() : "",
+    phone: typeof resume?.personal_info?.phone === "string" ? resume.personal_info.phone.trim() : "",
+    location: typeof resume?.personal_info?.location === "string" ? resume.personal_info.location.trim() : "",
+    linkedin: typeof resume?.personal_info?.linkedin === "string" ? resume.personal_info.linkedin.trim() : "",
+    website: typeof resume?.personal_info?.website === "string" ? resume.personal_info.website.trim() : "",
+    profession: typeof resume?.personal_info?.profession === "string" ? resume.personal_info.profession.trim() : "",
+    image: "",
+  },
+  professional_summary:
+    typeof resume?.professional_summary === "string" ? resume.professional_summary.trim() : "",
+  skills: normalizeStringList(resume?.skills),
+  experience: Array.isArray(resume?.experience)
+    ? resume.experience.map((item) => ({
+        company: typeof item?.company === "string" ? item.company.trim() : "",
+        position: typeof item?.position === "string" ? item.position.trim() : "",
+        start_date: typeof item?.start_date === "string" ? item.start_date.trim() : "",
+        end_date: typeof item?.end_date === "string" ? item.end_date.trim() : "",
+        description: typeof item?.description === "string" ? item.description.trim() : "",
+        is_current: Boolean(item?.is_current),
+      }))
+    : [],
+  education: Array.isArray(resume?.education)
+    ? resume.education.map((item) => ({
+        institution: typeof item?.institution === "string" ? item.institution.trim() : "",
+        degree: typeof item?.degree === "string" ? item.degree.trim() : "",
+        field: typeof item?.field === "string" ? item.field.trim() : "",
+        graduation_date:
+          typeof item?.graduation_date === "string" ? item.graduation_date.trim() : "",
+        gpa: typeof item?.gpa === "string" ? item.gpa.trim() : "",
+      }))
+    : [],
+  project: Array.isArray(resume?.project)
+    ? resume.project.map((item) => ({
+        name: typeof item?.name === "string" ? item.name.trim() : "",
+        type: typeof item?.type === "string" ? item.type.trim() : "",
+        description: typeof item?.description === "string" ? item.description.trim() : "",
+      }))
+    : [],
+});
+
 const normalizeFeedback = (feedback) => ({
   overallScore: normalizeScore(feedback?.overallScore),
   strengths: normalizeStringList(feedback?.strengths),
@@ -110,6 +157,50 @@ const buildPrompt = ({ resumeText, resumeData, jobDescription }) => [
   "",
   "Resume (plain text):",
   resumeText || "",
+].join("\n");
+
+const buildImportPrompt = ({ resumeText }) => [
+  "You extract resume data from plain text.",
+  "Return ONLY valid JSON with this exact shape:",
+  "{",
+  '  "title": string,',
+  '  "personal_info": {',
+  '    "full_name": string,',
+  '    "email": string,',
+  '    "phone": string,',
+  '    "location": string,',
+  '    "linkedin": string,',
+  '    "website": string,',
+  '    "profession": string',
+  "  },",
+  '  "professional_summary": string,',
+  '  "skills": string[],',
+  '  "experience": [{',
+  '    "company": string,',
+  '    "position": string,',
+  '    "start_date": string,',
+  '    "end_date": string,',
+  '    "description": string,',
+  '    "is_current": boolean',
+  "  }],",
+  '  "education": [{',
+  '    "institution": string,',
+  '    "degree": string,',
+  '    "field": string,',
+  '    "graduation_date": string,',
+  '    "gpa": string',
+  "  }],",
+  '  "project": [{ "name": string, "type": string, "description": string }]',
+  "}",
+  "Rules:",
+  "- Extract only what is supported by the text. Use empty strings or empty arrays when uncertain.",
+  "- Keep dates as strings exactly as they appear or convert to YYYY-MM when obvious.",
+  "- Merge repeated bullet points into concise descriptions.",
+  "- Do not invent employers, schools, dates, or achievements.",
+  "- 'title' should be a human-friendly resume title, preferably based on name and profession.",
+  "",
+  "Resume text:",
+  resumeText,
 ].join("\n");
 
 export const analyzeResume = async ({ resumeData, resumeText, jobDescription, env }) => {
@@ -177,4 +268,70 @@ export const analyzeResume = async ({ resumeData, resumeText, jobDescription, en
   }
 
   return normalizeFeedback(parsed);
+};
+
+export const importResumeFromText = async ({ resumeText, env }) => {
+  const apiKey = env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENROUTER_API_KEY is not configured on server");
+  }
+
+  const baseUrl = env.OPENROUTER_BASE_URL || DEFAULT_BASE_URL;
+  const model = env.OPENROUTER_MODEL || DEFAULT_MODEL;
+  const siteUrl = env.OPENROUTER_SITE_URL || "http://localhost:5173";
+  const appName = env.OPENROUTER_APP_NAME || "Resume Builder";
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": siteUrl,
+      "X-Title": appName,
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.1,
+      messages: [
+        {
+          role: "system",
+          content: "You extract structured resume data and respond with strict JSON only.",
+        },
+        {
+          role: "user",
+          content: buildImportPrompt({ resumeText }),
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(
+      `OpenRouter request failed (${response.status}): ${errorText || "unknown error"}`
+    );
+  }
+
+  const payload = await response.json();
+  const content = payload?.choices?.[0]?.message?.content;
+  const rawText =
+    typeof content === "string"
+      ? content
+      : Array.isArray(content)
+        ? content.map((part) => part?.text || "").join("\n")
+        : "";
+
+  const jsonText = extractJsonObject(rawText);
+  if (!jsonText) {
+    throw new Error("Model returned non-JSON response for resume import");
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonText);
+  } catch {
+    throw new Error("Failed to parse imported resume JSON");
+  }
+
+  return normalizeImportedResume(parsed);
 };

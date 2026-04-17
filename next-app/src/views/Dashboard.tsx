@@ -21,6 +21,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { IResume } from "../models";
 import { useAppContext } from "../contexts/AppContext";
+import ScrollReveal from "../components/ScrollReveal";
+import { apiFetch } from "../lib/api";
+import { extractPdfText } from "../lib/extractPdfText";
 import { createResume, deleteResume, listResumes } from "../lib/resumeStorage";
 import { templateCatalog } from "../lib/templateCatalog";
 
@@ -47,6 +50,7 @@ const Dashboard = () => {
   const [title, setTitle] = useState("");
   const [resume, setResume] = useState<File>();
   const [selectedTemplateId, setSelectedTemplateId] = useState(requestedTemplate.id);
+  const [isImportingResume, setIsImportingResume] = useState(false);
 
   const loadAllResumes = async () => {
     const resumes = await listResumes();
@@ -113,43 +117,63 @@ const Dashboard = () => {
 
   const uploadResume = async (event: FormEvent) => {
     event.preventDefault();
+    if (!resume) return;
 
-    const now = new Date().toISOString();
-    const created = await createResume({
-      _id: crypto.randomUUID(),
-      title,
-      userId: user?.id || "",
-      personal_info: {
-        full_name: "",
-        email: "",
-        phone: "",
-        location: "",
-        linkedin: "",
-        website: "",
-        profession: "",
-        image: "",
-      },
-      professional_summary: resume ? `Uploaded file: ${resume.name}` : "",
-      experience: [],
-      education: [],
-      skills: [],
-      project: [],
-      template: "classic",
-      accent_color: "#0ea5e9",
-      public: false,
-      createdAt: now,
-      updatedAt: now,
-      text_overrides: {
-        elements: {},
-        sections: {},
-      },
-    });
+    try {
+      setIsImportingResume(true);
+      const now = new Date().toISOString();
+      const resumeText = await extractPdfText(resume);
+      const imported = await apiFetch<{
+        importedResume: {
+          title: string;
+          personal_info: IResume["personal_info"];
+          professional_summary: string;
+          experience: IResume["experience"];
+          education: IResume["education"];
+          skills: IResume["skills"];
+          project: IResume["project"];
+        };
+      }>("/api/resume-import", {
+        method: "POST",
+        body: JSON.stringify({ resumeText }),
+      });
 
-    setShowUploadResume(false);
-    setTitle("");
-    setResume(undefined);
-    await loadAllResumes();
-    router.push(`/app/builder/${created._id}`);
+      const importedResume = imported.importedResume;
+      const created = await createResume({
+        _id: crypto.randomUUID(),
+        title:
+          title.trim() ||
+          importedResume.title ||
+          `${importedResume.personal_info.full_name || "Imported"} Resume`,
+        userId: user?.id || "",
+        personal_info: {
+          ...importedResume.personal_info,
+          image: "",
+        },
+        professional_summary: importedResume.professional_summary,
+        experience: importedResume.experience,
+        education: importedResume.education,
+        skills: importedResume.skills,
+        project: importedResume.project,
+        template: "classic",
+        accent_color: "#0ea5e9",
+        public: false,
+        createdAt: now,
+        updatedAt: now,
+        text_overrides: {
+          elements: {},
+          sections: {},
+        },
+      });
+
+      setShowUploadResume(false);
+      setTitle("");
+      setResume(undefined);
+      await loadAllResumes();
+      router.push(`/app/builder/${created._id}`);
+    } finally {
+      setIsImportingResume(false);
+    }
   };
 
   const closeCreateModal = () => {
@@ -167,6 +191,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-[calc(100vh-77px)] bg-[linear-gradient(180deg,_#eff6ff_0%,_#f8fafc_28%,_#f8fafc_100%)]">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+        <ScrollReveal className="w-full" delay={0}>
         <section className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-white shadow-[0_30px_100px_-40px_rgba(15,23,42,0.45)]">
           <div className="absolute inset-y-0 right-0 hidden w-1/2 bg-[radial-gradient(circle_at_top_right,_rgba(14,165,233,0.18),_transparent_60%),radial-gradient(circle_at_bottom_right,_rgba(251,146,60,0.16),_transparent_56%)] lg:block" />
           <div className="relative grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[1.2fr_0.8fr] lg:px-10 lg:py-10">
@@ -254,7 +279,9 @@ const Dashboard = () => {
             </div>
           </div>
         </section>
+        </ScrollReveal>
 
+        <ScrollReveal className="w-full" delay={80}>
         <section className="grid gap-4 md:grid-cols-3">
           {[
             {
@@ -304,8 +331,10 @@ const Dashboard = () => {
             );
           })}
         </section>
+        </ScrollReveal>
 
         {latestResume && (
+          <ScrollReveal className="w-full" delay={120}>
           <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-950 p-8 text-white">
               <p className="text-sm text-sky-300">{t("dashboard.continueLabel")}</p>
@@ -379,8 +408,10 @@ const Dashboard = () => {
               </div>
             </div>
           </section>
+          </ScrollReveal>
         )}
 
+        <ScrollReveal className="w-full" delay={160}>
         <section className="rounded-[32px] border border-slate-200 bg-white p-6 sm:p-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -501,6 +532,7 @@ const Dashboard = () => {
             </div>
           )}
         </section>
+        </ScrollReveal>
       </div>
 
       {showCreateResume && (
@@ -604,8 +636,11 @@ const Dashboard = () => {
               onChange={(event: ChangeEvent<HTMLInputElement>) => setResume(event.target.files?.[0])}
             />
 
-            <button className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
-              {t("dashboard.upload")}
+            <button
+              disabled={isImportingResume}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isImportingResume ? "Импортируем резюме..." : t("dashboard.upload")}
             </button>
           </div>
         </form>

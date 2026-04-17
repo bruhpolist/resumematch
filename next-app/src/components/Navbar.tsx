@@ -33,9 +33,6 @@ export default function Navbar() {
           <Link href="/" className={navLinkClass(pathname === "/")}>
             {t("nav.home")}
           </Link>
-          <a href="/#pricing" className={navLinkClass(pathname === "/" && !isAuthenticated)}>
-            {t("nav.pricing")}
-          </a>
 
           {isAuthenticated && (
             <>

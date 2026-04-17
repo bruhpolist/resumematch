@@ -188,14 +188,14 @@ export default function Subscription() {
         {sortedPlans.map((plan) => (
           <div
             key={plan.id}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
+            className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_40px_-30px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1.5 hover:border-cyan-200 hover:shadow-[0_35px_70px_-32px_rgba(8,145,178,0.32)]"
           >
-            <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800 uppercase">
+            <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase text-slate-800 transition-colors duration-300 group-hover:bg-cyan-50 group-hover:text-cyan-800">
               <CreditCard className="size-4" />
               {plan.name}
             </div>
             <div className="mt-5">
-              <p className="text-4xl font-bold text-slate-900">{formatPrice(plan)}</p>
+              <p className="text-4xl font-bold text-slate-900 transition-colors duration-300 group-hover:text-cyan-700">{formatPrice(plan)}</p>
               <p className="text-sm text-slate-500">
                 {plan.billingPeriod === "yearly" ? t("subscription.yearly") : t("subscription.monthly")}
               </p>
@@ -217,7 +217,7 @@ export default function Subscription() {
             <button
               onClick={() => startCheckout(plan.name)}
               disabled={!activeProvider || pendingPlan === plan.name}
-              className="mt-6 w-full rounded-xl bg-slate-900 px-4 py-2.5 font-semibold text-white hover:opacity-95 disabled:opacity-70 inline-flex justify-center items-center gap-2"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 font-semibold text-white shadow-[0_18px_32px_-22px_rgba(15,23,42,0.45)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-[0_24px_42px_-22px_rgba(15,23,42,0.5)] disabled:opacity-70"
             >
               {pendingPlan === plan.name && <Loader2 className="size-4 animate-spin" />}
               {t("subscription.buy")}
