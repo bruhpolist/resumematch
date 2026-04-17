@@ -6,36 +6,22 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Crown, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import ResumePreview from "@/components/ResumePreview";
 import { useAppContext } from "@/contexts/AppContext";
 import { resumeProcessSteps } from "@/lib/demoResume";
 import { templateCatalog } from "@/lib/templateCatalog";
 
 function ProcessPreview({
-  previewId,
-  template,
-  accentColor,
-  resume,
+  stepId,
 }: {
-  previewId: string;
-  template: string;
-  accentColor: string;
-  resume: (typeof resumeProcessSteps)[number]["resume"];
+  stepId: string;
 }) {
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-3 shadow-[0_22px_55px_-34px_rgba(15,23,42,0.36)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_35px_80px_-42px_rgba(15,23,42,0.42)] sm:p-4">
-      <div className="relative h-[380px] overflow-hidden rounded-[22px] border border-slate-200 bg-[linear-gradient(180deg,_#e2e8f0_0%,_#f8fafc_55%,_#ffffff_100%)] sm:h-[460px] lg:h-[560px]">
-        <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(90deg,_rgba(15,23,42,0.06),_rgba(14,165,233,0.14),_rgba(249,115,22,0.08))]" />
-        <div className="animate-soft-float absolute left-1/2 top-4 w-[896px] -translate-x-1/2 origin-top scale-[0.29] sm:top-5 sm:scale-[0.36] lg:scale-[0.46]">
-          <ResumePreview
-            data={resume}
-            template={template}
-            accentColor={accentColor}
-            previewId={previewId}
-            classes=" w-[896px] shadow-none"
-          />
-        </div>
-      </div>
+      <iframe
+        src={`/preview-demo?step=${encodeURIComponent(stepId)}`}
+        title={`Resume step preview ${stepId}`}
+        className="h-[720px] w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white sm:h-[860px] lg:h-[980px]"
+      />
     </div>
   );
 }
@@ -231,17 +217,14 @@ export default function ResumeProcess() {
                       </div>
                     </div>
 
-                    <div
+                  <div
                       ref={(node) => {
                         if (node) previewRefs.current[index] = node;
                       }}
                       className="bg-[linear-gradient(180deg,_#eef4ff_0%,_#ffffff_100%)] p-4 sm:p-5 lg:p-6"
                     >
                       <ProcessPreview
-                        previewId={`process-preview-${item.id}`}
-                        template={item.resume.template}
-                        accentColor={item.resume.accent_color}
-                        resume={item.resume}
+                        stepId={item.id}
                       />
                     </div>
                   </div>
